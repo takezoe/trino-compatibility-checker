@@ -13,7 +13,7 @@ import scala.jdk.CollectionConverters._
 class QueryRunner(version: Int) {
   private val logger = LoggerFactory.getLogger(classOf[QueryRunner])
 
-  def runQuery(sql: String): Either[Throwable, Seq[Map[String, AnyRef]]] = {
+  def runQuery(sql: String): QueryResult = {
     logger.info(s"Test ${version}")
     Using.resource(createContainer()) { container =>
       container.start()

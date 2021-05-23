@@ -3,14 +3,19 @@ package io.github.takezoe.trino.checker
 import org.apache.commons.codec.digest.DigestUtils
 
 object Main extends App {
-  val results = run(Seq(317, 350, 357), "SELECT null GROUP BY 1, 1")
+  val results = checkAll(Seq(317, 350, 357), "SELECT null GROUP BY 1, 1")
 
+  val checksums = results.map { case (version, result) =>
+    (version, result.map(checksum))
+  }
   println("======== result ========")
-  results.foreach { case (version, result) =>
-    println(s"${version}: ${result.map(checksum)}")
+  checksums.headOption.foreach { case (_, firstResult) =>
+    checksums.foreach { case (version, result) =>
+      println(s"${if(firstResult == result) "✅" else "❌"} ${version}: ${result}")
+    }
   }
 
-  def run(versions: Seq[Int], sql: String): Seq[(Int, Either[Throwable, Seq[Map[String, AnyRef]]])] = {
+  def checkAll(versions: Seq[Int], sql: String): Seq[(Int, QueryResult)] = {
     versions.map { version =>
       val runner = new QueryRunner(version)
       (version, runner.runQuery(sql))
