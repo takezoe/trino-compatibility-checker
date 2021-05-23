@@ -1,17 +1,19 @@
 package io.github.takezoe.trino.checker
 
 import io.prestosql.jdbc.PrestoDriver2
+import org.apache.commons.dbutils.{BasicRowProcessor, DbUtils}
 import org.slf4j.LoggerFactory
 import org.testcontainers.containers.GenericContainer
 
 import java.sql.{Connection, DriverManager}
 import java.util.Properties
 import scala.util.{Try, Using}
+import scala.jdk.CollectionConverters._
 
 class QueryRunner(version: Int) {
   private val logger = LoggerFactory.getLogger(classOf[QueryRunner])
 
-  def runQuery(sql: String): Either[Throwable, Unit] = {
+  def runQuery(sql: String): Either[Throwable, Seq[Map[String, AnyRef]]] = {
     logger.info(s"Test ${version}")
     Using.resource(createContainer()) { container =>
       container.start()
@@ -53,13 +55,16 @@ class QueryRunner(version: Int) {
     }
   }
 
-  private def runQueryInternal(port: Int, sql: String) = {
+  private def runQueryInternal(port: Int, sql: String): Seq[Map[String, AnyRef]] = {
     Using.resource(getConnection(port)) { conn =>
       Using.resource(conn.createStatement()) { stmt =>
         Using.resource(stmt.executeQuery(sql)) { rs =>
+          val rows = Seq.newBuilder[Map[String, AnyRef]]
+          val rowProcessor = new BasicRowProcessor()
           if (rs.next()) {
-            // TODO
+            rows += rowProcessor.toMap(rs).asScala.toMap
           }
+          rows.result()
         }
       }
     }
