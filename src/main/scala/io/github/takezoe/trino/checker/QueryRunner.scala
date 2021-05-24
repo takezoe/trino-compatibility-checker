@@ -10,33 +10,33 @@ import java.util.Properties
 import scala.util.{Try, Using}
 import scala.jdk.CollectionConverters._
 
-class QueryRunner(version: Int) {
+class QueryRunner {
   private val logger = LoggerFactory.getLogger(classOf[QueryRunner])
 
-  def runQuery(sql: String): QueryResult = {
+  def runQuery(version: Int, sql: String): QueryResult = {
     logger.info(s"Test ${version}")
-    Using.resource(createContainer()) { container =>
+    Using.resource(createContainer(version)) { container =>
       container.start()
       Try {
         val port = container.getMappedPort(8080)
-        waitForStartup(port)
+        waitForStartup(version, port)
         logger.info("Running a test query...")
-        runQueryInternal(port, sql)
+        runQueryInternal(version, port, sql)
       }.toEither
     }
   }
 
-  private def createContainer(): GenericContainer[_] = {
+  private def createContainer(version: Int): GenericContainer[_] = {
     val container = new GenericContainer(if (version >= 351) s"trinodb/trino:${version}" else s"ghcr.io/trinodb/presto:${version}")
     container.addExposedPort(8080)
     container
   }
 
-  private def waitForStartup(port: Int): Unit = {
+  private def waitForStartup(version: Int, port: Int): Unit = {
     while (true) {
       try {
-        Using.resource(getConnection(port)) { conn =>
-          runQueryInternal(port, "SELECT 1")
+        Using.resource(getConnection(version, port)) { conn =>
+          runQueryInternal(version, port, "SELECT 1")
           return
         }
       } catch {
@@ -47,7 +47,7 @@ class QueryRunner(version: Int) {
     }
   }
 
-  private def getConnection(port: Int): Connection = {
+  private def getConnection(version: Int, port: Int): Connection = {
     if (version >= 351) {
       DriverManager.getConnection(s"jdbc:trino://localhost:${port}", "user", "")
     } else {
@@ -55,8 +55,8 @@ class QueryRunner(version: Int) {
     }
   }
 
-  private def runQueryInternal(port: Int, sql: String): Seq[Map[String, AnyRef]] = {
-    Using.resource(getConnection(port)) { conn =>
+  private def runQueryInternal(version: Int, port: Int, sql: String): Seq[Map[String, AnyRef]] = {
+    Using.resource(getConnection(version, port)) { conn =>
       Using.resource(conn.createStatement()) { stmt =>
         Using.resource(stmt.executeQuery(sql)) { rs =>
           val rows = Seq.newBuilder[Map[String, AnyRef]]
