@@ -3,7 +3,7 @@ trino-compatibility-checker
 
 Automated test tool for comparing behavior between versions of Trino/Presto.
 
-This tool can be used to find a Trino/Presto version that introduced a different behavior by comparing the query results between versions using docker.
+This tool can be used to find a Trino/Presto version that introduced incompatible behavior by comparing the query results between versions using docker.
 
 ```scala
 import io.github.takezoe.trino.checker._
