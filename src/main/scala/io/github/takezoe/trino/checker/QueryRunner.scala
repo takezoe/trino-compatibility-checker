@@ -10,10 +10,14 @@ import java.util.Properties
 import scala.util.{Try, Using}
 import scala.jdk.CollectionConverters._
 
-class QueryRunner {
+trait QueryRunner {
+  def runQuery(version: Int, sql: String): QueryResult
+}
+
+class DockerQueryRunner extends QueryRunner {
   private val logger = LoggerFactory.getLogger(classOf[QueryRunner])
 
-  def runQuery(version: Int, sql: String): QueryResult = {
+  override def runQuery(version: Int, sql: String): QueryResult = {
     logger.info(s"Test ${version}")
     Using.resource(createContainer(version)) { container =>
       container.start()

@@ -1,10 +1,10 @@
 package io.github.takezoe.trino.checker
 
-trait Checker {
+trait VersionChecker {
   def check(versions: Seq[Int], sql: String): Seq[(Int, QueryResult)]
 }
 
-class AllChecker(runner: QueryRunner) extends Checker {
+class AllVersionChecker(runner: QueryRunner) extends VersionChecker {
   override def check(versions: Seq[Int], sql: String): Seq[(Int, QueryResult)] = {
     versions.map { version =>
       (version, runner.runQuery(version, sql))
@@ -12,7 +12,7 @@ class AllChecker(runner: QueryRunner) extends Checker {
   }
 }
 
-class LinerChecker(runner: QueryRunner) extends Checker {
+class LinerVersionChecker(runner: QueryRunner) extends VersionChecker {
   override def check(versions: Seq[Int], sql: String): Seq[(Int, QueryResult)] = {
     val results = Seq.newBuilder[(Int, QueryResult)]
     val firstVersion = versions.head
@@ -29,7 +29,7 @@ class LinerChecker(runner: QueryRunner) extends Checker {
   }
 }
 
-class BinaryChecker(runner: QueryRunner) extends Checker {
+class BinaryVersionChecker(runner: QueryRunner) extends VersionChecker {
   override def check(versions: Seq[Int], sql: String): Seq[(Int, QueryResult)] = {
     val results = Seq.newBuilder[(Int, QueryResult)]
     val firstVersion = versions.head
