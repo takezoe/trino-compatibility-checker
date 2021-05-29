@@ -8,12 +8,7 @@ import io.github.takezoe.trino.checker._
 
 val checker = new BinaryVersionChecker(new DockerQueryRunner())
 val results = checker.check(Range.inclusive(317, 350), "SELECT null GROUP BY 1, 1")
-
-results.headOption.foreach { case (_, firstResult) =>
-  results.foreach { case (version, result) =>
-    println(s"${if(isSame(firstResult, result)) "✅" else "❌"} ${version}: ${result.map(checksum)}")
-  }
-}
+printResults(results)
 ```
 
 The execution result of code above is below. In this case, 339 is a version that introduced a different behavior.

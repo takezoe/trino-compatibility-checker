@@ -21,4 +21,12 @@ package object checker {
         .mkString(",")
     }.sorted.mkString("\n"))
   }
+
+  def printResults(results: Seq[(Int, QueryResult)]): Unit = {
+    results.headOption.foreach { case (_, firstResult) =>
+      results.foreach { case (version, result) =>
+        println(s"${if(isSame(firstResult, result)) "✅" else "❌"} ${version}: ${result.map(checksum)}")
+      }
+    }
+  }
 }
