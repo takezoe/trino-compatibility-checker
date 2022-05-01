@@ -1,12 +1,10 @@
 package io.github.takezoe.trino.checker
 
-import io.prestosql.jdbc.PrestoDriver2
-import org.apache.commons.dbutils.{BasicRowProcessor, DbUtils}
+import org.apache.commons.dbutils.BasicRowProcessor
 import org.slf4j.LoggerFactory
 import org.testcontainers.containers.GenericContainer
 
 import java.sql.{Connection, DriverManager}
-import java.util.Properties
 import scala.util.{Try, Using}
 import scala.jdk.CollectionConverters._
 
@@ -52,11 +50,7 @@ class DockerQueryRunner extends QueryRunner {
   }
 
   private def getConnection(version: Int, port: Int): Connection = {
-    if (version >= 351) {
-      DriverManager.getConnection(s"jdbc:trino://localhost:${port}", "user", "")
-    } else {
-      new PrestoDriver2().connect(s"jdbc:presto://localhost:${port}?user=user", new Properties())
-    }
+    DriverManager.getConnection(s"jdbc:${if (version >= 351) "trino" else "presto"}://localhost:${port}", "user", "")
   }
 
   private def runQueryInternal(version: Int, port: Int, sql: String): Seq[Map[String, AnyRef]] = {
