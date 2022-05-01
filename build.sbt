@@ -9,6 +9,6 @@ libraryDependencies ++= Seq(
   "org.testcontainers" % "testcontainers" % "1.15.3",
   "commons-codec" % "commons-codec" % "1.15",
   "commons-dbutils" % "commons-dbutils" % "1.7",
-  "io.trino" % "trino-jdbc" % "357",
+  "io.trino" % "trino-jdbc" % "379",
   "io.prestosql" % "presto-jdbc" % "350"
 )
